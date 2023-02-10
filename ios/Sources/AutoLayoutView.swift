@@ -13,7 +13,7 @@ import UIKit
     }
 
     @objc func setScrollOffset(_ scrollOffset: Int) {
-        self.scrollOffset = CGFloat(scrollOffset)
+//        self.scrollOffset = CGFloat(scrollOffset)
     }
 
     @objc func setWindowSize(_ windowSize: Int) {
@@ -50,6 +50,19 @@ import UIKit
     private var lastMaxBound: CGFloat = 0
     /// Tracks where first pixel is drawn in the visible window
     private var lastMinBound: CGFloat = 0
+
+    /// Marks the first Item in the Scroll View
+    private var firstItemMarker: CellContainer? = nil
+
+    /// The position of the item in the Scroll View after insertion / deletion
+    private var previousMarkerOffset: CGFloat = -1
+
+    /// State that informs us whether this is the first render
+    private var isInitialRender: Bool = true
+
+
+    private var firstItemStableId: String = ""
+    private var firstItemOffset: CGFloat = 0
 
     /// State that informs us whether this is the first render
     private var isInitialRender: Bool = true
@@ -275,6 +288,11 @@ import UIKit
 
             updateLastMaxBoundOverall(currentCell: cellContainer, nextCell: nextCell)
         }
+
+        // This was placed here so that offset adjustments would ONLY be performed after
+        // all necessary views were pulled up to remove the white space
+        cellContainers.indices.forEach { index in
+            let cellContainer = cellContainers[index]
 
         if maintainTopContentPosition {
             adjustTopContentPosition(
