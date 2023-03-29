@@ -16,14 +16,14 @@ class CellContainerImpl(context: Context) : ReactViewGroup(context), CellContain
         return index
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        if(changed) {
-//            (parent as View).invalidate()
-
-            (parent as? AutoLayoutView)?.invalidateScrollView()
-        }
-    }
+//    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+//        super.onLayout(changed, left, top, right, bottom)
+//        if(changed) {
+////            (parent as View).invalidate()
+//
+//            (parent as? AutoLayoutView)?.invalidateScrollView()
+//        }
+//    }
 
     override fun setStableId(stableId: String) {
         this.stableId = stableId
