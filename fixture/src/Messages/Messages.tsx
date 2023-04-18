@@ -55,7 +55,7 @@ const Messages = () => {
           return item.type;
         }}
         data={messages}
-        experimentalMaintainTopContentPosition
+        experimentalScrollPositionManagement
       />
       <TextInputBar
         onSend={(text) => {

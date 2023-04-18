@@ -138,6 +138,19 @@ class FlashList<T> extends React.PureComponent<
     if (Number(this.props.numColumns) > 1 && this.props.horizontal) {
       throw new CustomError(ExceptionList.columnsWhileHorizontalNotSupported);
     }
+    if (
+      this.props.horizontal &&
+      this.props.experimentalScrollPositionManagement
+    ) {
+      throw new CustomError(ExceptionList.horizontalMaintainScrollNotSupported);
+    }
+
+    if (
+      this.props.experimentalScrollPositionManagement &&
+      this.props.renderScrollComponent
+    ) {
+      throw new CustomError(ExceptionList.customMaintainScrollNotSupported);
+    }
 
     // `createAnimatedComponent` always passes a blank style object. To avoid warning while using AnimatedFlashList we've modified the check
     // `style` prop can be an array. So we need to validate every object in array. Check: https://github.com/Shopify/flash-list/issues/651
@@ -385,7 +398,7 @@ class FlashList<T> extends React.PureComponent<
           itemAnimator={this.itemAnimator}
           suppressBoundedSizeException
           externalScrollView={
-            this.props.experimentalMaintainTopContentPosition &&
+            this.props.experimentalScrollPositionManagement &&
             Platform.OS === "android"
               ? (BidirectionalScrollView as unknown as RecyclerListViewProps["externalScrollView"])
               : (renderScrollComponent as RecyclerListViewProps["externalScrollView"])
@@ -471,8 +484,8 @@ class FlashList<T> extends React.PureComponent<
           onBlankAreaEvent={this.props.onBlankArea}
           onLayout={this.updateDistanceFromWindow}
           disableAutoLayout={this.props.disableAutoLayout}
-          experimentalMaintainTopContentPosition={
-            this.props.experimentalMaintainTopContentPosition
+          experimentalScrollPositionManagement={
+            this.props.experimentalScrollPositionManagement
           }
         >
           {children}
