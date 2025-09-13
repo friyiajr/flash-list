@@ -1,0 +1,57 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: bundler
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100
+    insecure-external-code-execution: allow
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100
+  - package-ecosystem: bundler
+    directory: "/fixture/react-native"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100
+    insecure-external-code-execution: allow
+  - package-ecosystem: npm
+    directory: "/fixture/react-native"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100
+  - package-ecosystem: bundler
+    directory: "/fixture/expo"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100
+    insecure-external-code-execution: allow
+  - package-ecosystem: npm
+    directory: "/fixture/expo"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 100

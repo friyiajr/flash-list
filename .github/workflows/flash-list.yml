@@ -1,0 +1,216 @@
+name: flash-list
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  NODE_VERSION: 20.4.0
+
+jobs:
+  build-ts:
+    name: "Build Typescript"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - run: |
+          yarn
+          yarn build
+
+  build-fixture-ts:
+    name: "Build fixture Typescript"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - run: |
+          yarn
+          cd fixture/react-native
+          yarn
+          yarn build
+
+  lint-ts:
+    name: "Lint Typescript"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: |
+          yarn
+          yarn lint
+
+  test-ts:
+    name: "Test Typescript"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - run: |
+          yarn
+          yarn test --forceExit
+
+  metro-ios:
+    name: "Metro bundling for iOS"
+    runs-on: macos-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - run: |
+          yarn
+          yarn build
+          cd fixture/react-native
+          yarn
+          mkdir -p /tmp/artifacts
+          yarn react-native bundle --entry-file index.js --platform ios --bundle-output /tmp/artifacts/bundle.js --sourcemap-output /tmp/artifacts/output.map
+      - name: Archive iOS bundle artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-bundle-artifacts
+          path: /tmp/artifacts
+
+  metro-android:
+    name: "Metro bundling for Android"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - run: |
+          yarn
+          yarn build
+          cd fixture/react-native
+          yarn
+          mkdir -p /tmp/artifacts
+          yarn react-native bundle --entry-file index.js --platform android --bundle-output /tmp/artifacts/bundle.js --sourcemap-output /tmp/artifacts/output.map
+      - name: Archive Android bundle artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-bundle-artifacts
+          path: /tmp/artifacts
+
+  build-ios:
+    name: "Build iOS"
+    runs-on: macos-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - name: Ruby setup
+        uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
+        with:
+          bundler-cache: true
+      - name: Install dependencies
+        run: |
+          yarn
+          yarn build
+          cd fixture/react-native
+          yarn
+          cd ios
+          bundle exec pod install
+      - name: Build iOS
+        run: |
+          mkdir -p /tmp/artifacts
+          cd fixture/react-native/ios
+          set -o pipefail && env NSUnbufferedIO=YES xcodebuild clean build -scheme FlatListPro -workspace FlatListPro.xcworkspace -destination 'generic/platform=iOS Simulator' | tee /tmp/artifacts/ios_build.log
+
+  build-android:
+    name: "Build Android"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+      - name: Set up JDK 17
+        uses: actions/setup-java@91d3aa4956ec4a53e477c4907347b5e3481be8c9 # v2.5.1
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: Ruby setup
+        uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+      - name: Install dependencies
+        run: |
+          cd fixture/react-native
+          yarn
+      - name: Build Android
+        run: |
+          cd fixture/react-native/android
+          ./gradlew assembleDebug
+
+  # run-e2e-ios:
+  #   name: "Run iOS e2e tests"
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Repository checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #     - name: Node setup
+  #       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: "yarn"
+  #     - name: ruby setup
+  #       uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
+  #       with:
+  #         ruby-version: ${{ env.RUBY_VERSION }}
+  #         bundler-cache: true
+  #     - name: Install dependencies
+  #       run: |
+  #         yarn
+  #         brew tap wix/brew
+  #         brew install applesimutils
+  #         yarn build
+  #         cd fixture/react-native
+  #         yarn
+  #         cd ios
+  #         bundle exec pod install
+  #     - name: Build and Run e2e tests
+  #       run: |
+  #         cd fixture/react-native
+  #         yarn e2e:build:ios
+  #         yarn e2e:test:ios
+  #     - name: Archive iOS e2e artifacts
+  #       if: failure()
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: ios-e2e-artifacts
+  #         path: fixture/react-native/e2e/artifacts/ios/diff/*.png
